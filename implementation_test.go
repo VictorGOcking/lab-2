@@ -2,7 +2,7 @@ package lab2
 
 import (
 	"fmt"
-	"gopkg.in/check.v1"
+	check "gopkg.in/check.v1"
 	"testing"
 )
 
@@ -12,12 +12,14 @@ type MySuite struct{}
 
 var _ = check.Suite(&MySuite{})
 
-var expected = []struct {
+type TestCase struct {
 	task     string
 	postfix  string
 	prefix   string
 	errorMsg string
-}{
+}
+
+var expected = []TestCase{
 	{
 		task:     "Converts simple expression",
 		postfix:  "4 2 - 3 * 5 +",
