@@ -1,10 +1,6 @@
-// TODO: Переіменуйте на власний модуль.
-module github.com/roman-mazur/architecture-lab-2
+module github.com/VictorGOcking/lab-2
 
 go 1.22
-
-// TODO: Змініть, якщо вам потрібно використовувати іншу бібліотеку.
-require github.com/stretchr/testify v1.8.4
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
