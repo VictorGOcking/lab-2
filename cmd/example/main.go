@@ -2,26 +2,82 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	lab2 "github.com/roman-mazur/architecture-lab-2"
+	"io"
+	"os"
+	"strings"
 )
 
 var (
 	inputExpression = flag.String("e", "", "Expression to compute")
-	// TODO: Add other flags support for input and output configuration.
+	inputFile       = flag.String("f", "", "File to get expression from")
+	outputFile      = flag.String("o", "", "File to set the result")
 )
+
+func logErrorAndExit(message string) {
+	os.Stderr.WriteString(message + "\n")
+	os.Exit(1)
+}
+
+func getFileOrExit(name string) *os.File {
+	file, err := os.Open(name)
+
+	if err != nil {
+		message := "File " + name + " can not be opened:\n" + err.Error()
+		logErrorAndExit(message)
+	}
+
+	return file
+}
+
+func getFileOrCreate(name string) *os.File {
+	file, err := os.Open(name)
+
+	if err == nil {
+		return file
+	}
+
+	defer file.Close()
+
+	createdFile, createdErr := os.Create(name)
+
+	if createdErr != nil {
+		logErrorAndExit(createdErr.Error())
+	}
+
+	return createdFile
+}
 
 func main() {
 	flag.Parse()
 
-	// TODO: Change this to accept input from the command line arguments as described in the task and
-	//       output the results using the ComputeHandler instance.
-	//       handler := &lab2.ComputeHandler{
-	//           Input: {construct io.Reader according the command line parameters},
-	//           Output: {construct io.Writer according the command line parameters},
-	//       }
-	//       err := handler.Compute()
+	if *inputExpression != "" && *inputFile != "" {
+		logErrorAndExit("Expression source must be only one")
+	}
 
-	res, _ := lab2.PrefixToPostfix("+ 2 2")
-	fmt.Println(res)
+	var reader io.Reader
+	var writer io.Writer
+
+	if *inputExpression != "" {
+		reader = strings.NewReader(*inputExpression)
+	} else {
+		reader = getFileOrExit(*inputFile)
+	}
+
+	if *outputFile == "" {
+		writer = os.Stdout
+	} else {
+		writer = getFileOrCreate(*outputFile)
+	}
+
+	handler := &lab2.ComputeHandler{
+		Reader: reader,
+		Writer: writer,
+	}
+
+	err := handler.Compute()
+
+	if err != nil {
+		logErrorAndExit(err.Error())
+	}
 }
