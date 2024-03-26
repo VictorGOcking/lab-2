@@ -16,36 +16,8 @@ var (
 
 func logErrorAndExit(message string) {
 	os.Stderr.WriteString(message + "\n")
+
 	os.Exit(1)
-}
-
-func getFileOrExit(name string) *os.File {
-	file, err := os.Open(name)
-
-	if err != nil {
-		message := "File " + name + " can not be opened:\n" + err.Error()
-		logErrorAndExit(message)
-	}
-
-	return file
-}
-
-func getFileOrCreate(name string) *os.File {
-	file, err := os.Open(name)
-
-	if err == nil {
-		return file
-	}
-
-	defer file.Close()
-
-	createdFile, createdErr := os.Create(name)
-
-	if createdErr != nil {
-		logErrorAndExit(createdErr.Error())
-	}
-
-	return createdFile
 }
 
 func main() {
@@ -61,13 +33,36 @@ func main() {
 	if *inputExpression != "" {
 		reader = strings.NewReader(*inputExpression)
 	} else {
-		reader = getFileOrExit(*inputFile)
+		file, err := os.Open(*inputFile)
+
+		defer file.Close()
+
+		if err != nil {
+			message := "File " + *inputFile + " can not be opened:\n" + err.Error()
+			logErrorAndExit(message)
+		}
+
+		reader = file
 	}
 
 	if *outputFile == "" {
 		writer = os.Stdout
 	} else {
-		writer = getFileOrCreate(*outputFile)
+		file, err := os.Open(*outputFile)
+
+		defer file.Close()
+
+		if err == nil {
+			writer = file
+		}
+
+		createdFile, createdErr := os.Create(*outputFile)
+
+		if createdErr != nil {
+			logErrorAndExit(createdErr.Error())
+		}
+
+		writer = createdFile
 	}
 
 	handler := &lab2.ComputeHandler{
